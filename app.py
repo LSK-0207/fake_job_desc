@@ -17,13 +17,10 @@ with open("tokenizer.pkl", "rb") as f:
     tokenizer = pickle.load(f)
 print("Tokenizer loaded!")
 
-# Load TFLite model
-print("Loading TFLite model...")
-interpreter = tf.lite.Interpreter(model_path="fake_job_lstm_model.tflite")
-interpreter.allocate_tensors()
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-print("TFLite model loaded!")
+# Load full Keras model
+print("Loading model...")
+model = tf.keras.models.load_model('fake_job_lstm_model.h5')
+print("Model loaded!")
 
 MAX_SEQUENCE_LENGTH = 200
 
@@ -44,11 +41,9 @@ def predict():
 
     # Preprocess the input
     input_data = preprocess_text(combined_text)
-
-    # Run inference using TFLite model
-    interpreter.set_tensor(input_details[0]["index"], input_data)
-    interpreter.invoke()
-    prediction = interpreter.get_tensor(output_details[0]["index"])[0][0]
+    
+    # Run inference using full model
+    prediction = model.predict(input_data, verbose=0)[0][0]
 
     # Determine result
     result = "Fraudulent" if prediction > 0.7 else "Legitimate"
